@@ -88,7 +88,7 @@ def close(session_attributes, fulfillment_state, message):
     return response
 
 
-def validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request):
+def validate_data(bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request):
     """
     Validates the data provided by the user.
     """
@@ -123,19 +123,19 @@ def validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsi
     #        )
 
     # Validate the listing price, it should be > 0
-    if listingPrice is not None:
-        listingPrice = parse_int(
-            listingPrice
-        )  # Since parameters are strings it's important to cast values
-        if listingPrice < 0:
-            return build_validation_result(
-                False,
-                "listingPrice",
-                "The listing price should be greater than 0$,"
-                "please provide a valid listing amount in dollars." 
-                "If the real listing price is 0$," 
-                "you should make an offer because it sounds like a great deal!",
-            )
+    #if listingPrice is not None:
+    #    listingPrice = parse_int(
+    #        listingPrice
+    #    )  # Since parameters are strings it's important to cast values
+    #    if listingPrice < 0:
+    #        return build_validation_result(
+    #            False,
+    #            "listingPrice",
+    #            "The listing price should be greater than 0$,"
+    #            "please provide a valid listing amount in dollars." 
+    #            "If the real listing price is 0$," 
+    #            "you should make an offer because it sounds like a great deal!",
+    #        )
     
     aggressionOptions = ["low", "average", "high"]
     # Validate that the user input a valid level of aggression
@@ -148,7 +148,7 @@ def validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsi
                 "the level of aggression can be either \"low\", \"average\" or \"high\"."
             )
 
-    return build_validation_result(True, None, None, None, None, None, None, None, None, None)
+    return build_validation_result(True, None, None, None, None, None, None, None, None)
 
 def readCSV():
     data = pd.read_csv('data.csv')
@@ -166,7 +166,7 @@ def cleanData(data):
     return data
 
 def trainModel(data):
-    features = data.drop(["date","street","country", "city", "waterfront", "view", "condition", "yr_renovated", "sqft_above"],axis=1)
+    features = data.drop(["date","street","country", "city", "waterfront", "view", "condition", "yr_renovated", "sqft_above", "floors"],axis=1)
 
     y = features['price']
     X = features.drop(['price'],axis=1)
@@ -198,7 +198,7 @@ def offerAid(intent_request):
     """
 
     #propertyType = get_slots(intent_request)["propertyType"]
-    listingPrice = get_slots(intent_request)["listingPrice"]
+    #listingPrice = get_slots(intent_request)["listingPrice"]
     bedrooms = get_slots(intent_request)["bedrooms"]
     bathrooms = get_slots(intent_request)["bathrooms"]
     sqft = get_slots(intent_request)["sqft"]
@@ -218,7 +218,7 @@ def offerAid(intent_request):
         slots = get_slots(intent_request)
 
         # Validates user's input using the validate_data function
-        validation_result = validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request)
+        validation_result = validate_data(bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request)
 
         # If the data provided by the user is not valid,
         # the elicitSlot dialog action is used to re-prompt for the first violation detected.
@@ -240,7 +240,7 @@ def offerAid(intent_request):
         # Once all slots are valid, a delegate dialog is returned to Lex to choose the next course of action.
         return delegate(output_session_attributes, get_slots(intent_request))
 
-    userData = [{'price': listingPrice, 'bedrooms': bedrooms, 'bathrooms': bathrooms, 'sqft_living': sqft, 'sqft_lot': lotsize, 'sqft_basement': sqftunfinished, 'yr_built': yrbuilt, 'statezip':zipcode}]
+    userData = [{'bedrooms': 3, 'bathrooms': 1, 'sqft_living': 1200, 'sqft_lot': 4000, 'sqft_basement': 300, 'yr_built': 1980, 'statezip': 98056}]
     userDF = pd.DataFrame(userData)
 
     # Return a message with conversion's result.

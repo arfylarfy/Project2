@@ -1,0 +1,26 @@
+{
+    "messageVersion": "1.0",
+    "invocationSource": "DialogCodeHook",
+    "userId": "John",
+    "sessionAttributes": {},
+    "bot": {
+      "name": "offerAid",
+      "alias": "$LATEST",
+      "version": "$LATEST"
+    },
+    "outputDialogMode": "Text",
+    "currentIntent": {
+      "name": "buyerinputs",
+      "slots": {
+        "bedrooms": "3",
+        "bathrooms": "1",
+        "sqft": "1200",
+        "sqftUnfinished": "300",
+        "lotsize": "4000",
+        "yrbuilt": "1980",
+        "zipcode": "98056",
+        "aggressionLevel": "high"
+      },
+      "confirmationStatus": "None"
+    }
+  }
