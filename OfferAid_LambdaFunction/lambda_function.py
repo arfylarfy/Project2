@@ -1,4 +1,12 @@
 ### Required Libraries ###
+import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
+from sklearn.tree import DecisionTreeRegressor
+from imblearn.metrics import sensitivity_specificity_support
+
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -79,92 +87,127 @@ def close(session_attributes, fulfillment_state, message):
 
     return response
 
-def validate_data(age, investment_amount, intent_request):
+
+def validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request):
     """
     Validates the data provided by the user.
     """
-
-    # Validate that the user is between 0 and 65 years old
-    if age is not None:
-        age = parse_int(age)
-        if 0 >= age or age > 65:
-            return build_validation_result(
+    def isint(var):
+        if var is not None and var is not "skip":
+            var = parse_int(var)
+            if var < 0:
+                return build_validation_result(
                 False,
-                "age",
-                "Age must be between 0 and 65 years old to use this service, "
-                "please provide a different date of birth.",
-            )
+                var,
+                "Numeric response must be greater than zero," 
+                "if the value is unknown type \"skip\" to default to the average value for the zip code",
+                )
 
-    # Validate the investment amount, it should be > 0
-    if investment_amount is not None:
-        investment_amount = parse_int(
-            investment_amount
+    isint(bedrooms)
+    isint(bathrooms)
+    isint(sqft)
+    isint(sqftunfinished)
+    isint(lotsize)
+    isint(yrbuilt)
+    isint(zipcode)
+
+    #propTypeList = ["House", "Condo", "Townhouse"]
+    # Validate that the input is one of the three valid property types
+    #if propertyType is not None:
+    #    if propertyType not in propTypeList:
+    #        return build_validation_result(
+    #            False,
+    #            "propertyType",
+    #            "The property type must be either House, Condo, or Townhouse in order to use this service, "
+    #            "please provide a different property type.",
+    #        )
+
+    # Validate the listing price, it should be > 0
+    if listingPrice is not None:
+        listingPrice = parse_int(
+            listingPrice
         )  # Since parameters are strings it's important to cast values
-        if investment_amount < 5000:
+        if listingPrice < 0:
             return build_validation_result(
                 False,
-                "investmentAmount",
-                "The amount invested should be greater than or equal to $5000, "
-                "please provide a valid amount in dollars to invest.",
+                "listingPrice",
+                "The listing price should be greater than 0$,"
+                "please provide a valid listing amount in dollars." 
+                "If the real listing price is 0$," 
+                "you should make an offer because it sounds like a great deal!",
             )
-    return build_validation_result(True, None, None)
+    
+    aggressionOptions = ["low", "average", "high"]
+    # Validate that the user input a valid level of aggression
+    if aggressionLevel is not None:
+        if aggressionLevel not in aggressionOptions:
+            return build_validation_result(
+                False,
+                "aggressionLevel",
+                "Please choose from one of the responses listed in order to get an accurate response,"
+                "the level of aggression can be either \"low\", \"average\" or \"high\"."
+            )
 
-def getresponse(risk_level):
-    if risk_level == "none":
-        return "100%/ bonds (AGG), 0%/ equities (SPY)"
-    elif risk_level == "low":
-        return "60%/ bonds (AGG), 40%/ equities (SPY)"
-    elif risk_level == "medium":
-        return "40%/ bonds (AGG), 60%/ equities (SPY)"
-    else:
-        return "20%/ bonds (AGG), 80%/ equities (SPY)"
+    return build_validation_result(True, None, None, None, None, None, None, None, None, None)
+
+def readCSV():
+    data = pd.read_csv('data.csv')
+    return data
+
+def cleanData(data):
+    data['bedrooms'] = data['bedrooms'].round().astype(int)
+    data['bathrooms'] = data['bathrooms'].round().astype(int)
+    data['price'] = data['price'].round(decimals=2)
+    data['statezip'] = data['statezip'].replace("WA 9", "9",regex=True).astype(int)
+    missing = data.loc[(data['price'] == 0)].append(data.loc[(data['bathrooms'] == 0)])
+    missing_index_list = missing.reset_index()['index'].to_list()
+    missing_index_list.sort(reverse = True)
+    data = data.drop(missing_index_list,axis=0)
+    return data
+
+def trainModel(data):
+    features = data.drop(["date","street","country", "city", "waterfront", "view", "condition", "yr_renovated", "sqft_above"],axis=1)
+
+    y = features['price']
+    X = features.drop(['price'],axis=1)
 
 
+    dt = DecisionTreeRegressor(max_depth=18)
+    dt.fit(X, y)
+    
+    return dt
 
 
+def getresponse(userDF, aggressionLevel):
+    data = readCSV()
+    data = cleanData(data)
+    dtpred = trainModel(data)
+    offerEstimate = dtpred.predict(userDF)
+    if aggressionLevel == "low":
+        offerEstimate = offerEstimate*.95
+    elif aggressionLevel == "high":
+        offerEstimate = offerEstimate*1.05
 
-"""
-Step 3: Enhance the Robo Advisor with an Amazon Lambda Function
-
-In this section, you will create an Amazon Lambda function that will validate the data provided by the user on the Robo Advisor.
-
-1. Start by creating a new Lambda function from scratch and name it `recommendPortfolio`. Select Python 3.7 as runtime.
-
-2. In the Lambda function code editor, continue by deleting the AWS generated default lines of code, then paste in the starter code provided in `lambda_function.py`.
-
-3. Complete the `recommend_portfolio()` function by adding these validation rules:
-
-    * The `age` should be greater than zero and less than 65.
-    * The `investment_amount` should be equal to or greater than 5000.
-
-4. Once the intent is fulfilled, the bot should respond with an investment recommendation based on the selected risk level as follows:
-
-    * **none:** "100% bonds (AGG), 0% equities (SPY)"
-    * **low:** "60% bonds (AGG), 40% equities (SPY)"
-    * **medium:** "40% bonds (AGG), 60% equities (SPY)"
-    * **high:** "20% bonds (AGG), 80% equities (SPY)"
-
-> **Hint:** Be creative while coding your solution, you can have all the code on the `recommend_portfolio()` function, or you can split the functionality across different functions, put your Python coding skills in action!
-
-5. Once you finish coding your Lambda function, test it using the sample test events provided for this Challenge.
-
-6. After successfully testing your code, open the Amazon Lex Console and navigate to the `recommendPortfolio` bot configuration, integrate your new Lambda function by selecting it in the “Lambda initialization and validation” and “Fulfillment” sections.
-
-7. Build your bot, and test it with valid and invalid data for the slots.
-
-"""
+    return f"Using the information provided, {offerEstimate} would be a reasonable offer for this property"
 
 
 ### Intents Handlers ###
-def recommend_portfolio(intent_request):
+def offerAid(intent_request):
     """
     Performs dialog management and fulfillment for recommending a portfolio.
     """
 
-    first_name = get_slots(intent_request)["firstName"]
-    age = get_slots(intent_request)["age"]
-    investment_amount = get_slots(intent_request)["investmentAmount"]
-    risk_level = get_slots(intent_request)["riskLevel"]
+    #propertyType = get_slots(intent_request)["propertyType"]
+    listingPrice = get_slots(intent_request)["listingPrice"]
+    bedrooms = get_slots(intent_request)["bedrooms"]
+    bathrooms = get_slots(intent_request)["bathrooms"]
+    sqft = get_slots(intent_request)["sqft"]
+    sqftunfinished = get_slots(intent_request)["sqftunfinished"]
+    lotsize = get_slots(intent_request)["lotsize"]
+    #acresorsqft = get_slots(intent_request)["acresorsqft"]
+    yrbuilt = get_slots(intent_request)["yrbuilt"]
+    zipcode = get_slots(intent_request)["zip"]
+    aggressionLevel = get_slots(intent_request)["aggressionLevel"]
     source = intent_request["invocationSource"]
     
     
@@ -175,11 +218,11 @@ def recommend_portfolio(intent_request):
         slots = get_slots(intent_request)
 
         # Validates user's input using the validate_data function
-        validation_result = validate_data(age, investment_amount, intent_request)
+        validation_result = validate_data(listingPrice, bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request)
 
         # If the data provided by the user is not valid,
         # the elicitSlot dialog action is used to re-prompt for the first violation detected.
-        if not validation_result["isValid"]:
+        if not validation_result["isValid"]: 
             slots[validation_result["violatedSlot"]] = None  # Cleans invalid slot
 
             # Returns an elicitSlot dialog to request new data for the invalid slot
@@ -196,7 +239,9 @@ def recommend_portfolio(intent_request):
 
         # Once all slots are valid, a delegate dialog is returned to Lex to choose the next course of action.
         return delegate(output_session_attributes, get_slots(intent_request))
-        # Get the current price of bitcoin in dolars and make the conversion from dollars to bitcoin.
+
+    userData = [{'price': listingPrice, 'bedrooms': bedrooms, 'bathrooms': bathrooms, 'sqft_living': sqft, 'sqft_lot': lotsize, 'sqft_basement': sqftunfinished, 'yr_built': yrbuilt, 'statezip':zipcode}]
+    userDF = pd.DataFrame(userData)
 
     # Return a message with conversion's result.
     return close(
@@ -204,12 +249,9 @@ def recommend_portfolio(intent_request):
         "Fulfilled",
         {
             "contentType": "PlainText",
-            "content": getresponse(risk_level)
+            "content": getresponse(userDF, aggressionLevel)
             },
     )
-
-
-
 
 
 ### Intents Dispatcher ###
@@ -221,8 +263,8 @@ def dispatch(intent_request):
     intent_name = intent_request["currentIntent"]["name"]
 
     # Dispatch to bot's intent handlers
-    if intent_name == "recommendPortfolio":
-        return recommend_portfolio(intent_request)
+    if intent_name == "offerAid":
+        return offerAid(intent_request)
 
     raise Exception("Intent with name " + intent_name + " not supported")
 
