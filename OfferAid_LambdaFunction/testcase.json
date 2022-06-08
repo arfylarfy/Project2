@@ -10,15 +10,16 @@
     },
     "outputDialogMode": "Text",
     "currentIntent": {
-      "name": "buyerinputs",
+      "name": "buyerInputs",
       "slots": {
-          "Zip Code": "98056",
-          "Bathrooms": "1", 
-          "Bedrooms": "3", 
-          "Lot Square Footage ": "6000", 
-          "Listing Price": "160000", 
-          "Square Footage": "900", 
-          "Property Type": "1"
+          "zip": "98056",
+          "bathrooms": "1", 
+          "bedrooms": "3", 
+          "lotsize": "6000", 
+          "listingPrice": "160000", 
+          "sqft": "900", 
+          "propertyType": "1",
+          "aggressionLevel": "average"
       },
       "confirmationStatus": "None"
     }

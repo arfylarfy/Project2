@@ -1,5 +1,4 @@
 ### Required Libraries ###
-import pandas as pd
 import pickle
 import boto3
 
@@ -103,7 +102,7 @@ def close(session_attributes, fulfillment_state, message):
 
 ### User Input Validation function ###
 
-def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, intent_request):
+def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, listingPrice, intent_request):
     """
     Validates the data provided by the user.
     """
@@ -161,7 +160,7 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
                 "the level of aggression can be either \"low\", \"average\" or \"high\"."
             )
 
-    return build_validation_result(True, None, None, None, None, None, None, None, None)
+    return build_validation_result(True, None, None)
 
 
 def getresponse(userDF, aggressionLevel):
@@ -200,7 +199,7 @@ def offerAid(intent_request):
         slots = get_slots(intent_request)
 
         # Validates user's input using the validate_data function
-        validation_result = validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, intent_request)
+        validation_result = validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, listingPrice, intent_request)
 
         # If the data provided by the user is not valid,
         # the elicitSlot dialog action is used to re-prompt for the first violation detected.
@@ -246,7 +245,7 @@ def dispatch(intent_request):
     intent_name = intent_request["currentIntent"]["name"]
 
     # Dispatch to bot's intent handlers
-    if intent_name == "offerAid":
+    if intent_name == "buyerInputs":
         return offerAid(intent_request)
 
     raise Exception("Intent with name " + intent_name + " not supported")
