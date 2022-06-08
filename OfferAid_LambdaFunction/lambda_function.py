@@ -164,7 +164,7 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
     return build_validation_result(True, None, None, None, None, None, None, None, None)
 
 
-def getresponse(userDF, aggressionLevel, dt):
+def getresponse(userDF, aggressionLevel):
     pred = loadS3file()    
     offerEstimate = pred.predict(userDF)
     if aggressionLevel == "low":
@@ -222,8 +222,9 @@ def offerAid(intent_request):
         # Once all slots are valid, a delegate dialog is returned to Lex to choose the next course of action.
         return delegate(output_session_attributes, get_slots(intent_request))
 
-    #userData = [{'bedrooms': 3, 'bathrooms': 1, 'sqft_living': 1200, 'sqft_lot': 4000, 'sqft_basement': 300, 'yr_built': 1980, 'statezip': 98056}]
-    #userDF = pd.DataFrame(userData)
+    userData = [{'Zip Code': zipcode, 'Bathrooms': bathrooms, 'Bedrooms': bedrooms, 'Lot Square Footage ': lotsize, 'Listing Price': listingPrice, 'Square Footage': sqft, 'Property Type': propertyType}]
+    userDF = pd.DataFrame(userData)
+    userDF = userDF.astype(int)
 
     # Return a message with conversion's result.
     return close(
