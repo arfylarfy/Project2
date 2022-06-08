@@ -12,14 +12,13 @@
     "currentIntent": {
       "name": "buyerinputs",
       "slots": {
-        "bedrooms": "3",
-        "bathrooms": "1",
-        "sqft": "1200",
-        "sqftUnfinished": "300",
-        "lotsize": "4000",
-        "yrbuilt": "1980",
-        "zipcode": "98056",
-        "aggressionLevel": "high"
+          "Zip Code": "98056",
+          "Bathrooms": "1", 
+          "Bedrooms": "3", 
+          "Lot Square Footage ": "6000", 
+          "Listing Price": "160000", 
+          "Square Footage": "900", 
+          "Property Type": "1"
       },
       "confirmationStatus": "None"
     }
