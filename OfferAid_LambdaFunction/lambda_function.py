@@ -1,11 +1,8 @@
 ### Required Libraries ###
 import pandas as pd
-import numpy as np
+import pickle
+import boto3
 
-from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
-from sklearn.tree import DecisionTreeRegressor
-from imblearn.metrics import sensitivity_specificity_support
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -19,6 +16,22 @@ def parse_int(n):
         return int(n)
     except ValueError:
         return float("nan")
+
+def loadS3file():
+    cred = boto3.Session().get_credentials()
+    ACCESS_KEY = cred.access_key
+    SECRET_KEY = cred.secret_key
+
+    s3client = boto3.client('s3', 
+                        aws_access_key_id = ACCESS_KEY, 
+                        aws_secret_access_key = SECRET_KEY, 
+                       )
+
+    response = s3client.get_object(Bucket='offeraiddataset', Key='OfferAidmodel.pkl')
+
+    body = response['Body'].read()
+    pred = pickle.loads(body)
+    return pred
 
 
 def build_validation_result(is_valid, violated_slot, message_content):
@@ -88,54 +101,54 @@ def close(session_attributes, fulfillment_state, message):
     return response
 
 
-def validate_data(bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request):
+### User Input Validation function ###
+
+def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, intent_request):
     """
     Validates the data provided by the user.
     """
     def isint(var):
-        if var is not None and var is not "skip":
+        if var is not None:
             var = parse_int(var)
             if var < 0:
                 return build_validation_result(
                 False,
                 var,
-                "Numeric response must be greater than zero," 
-                "if the value is unknown type \"skip\" to default to the average value for the zip code",
+                "Numeric response must be greater than zero" 
+                #"if the value is unknown type \"skip\" to default to the average value for the zip code",
                 )
 
     isint(bedrooms)
     isint(bathrooms)
     isint(sqft)
-    isint(sqftunfinished)
     isint(lotsize)
-    isint(yrbuilt)
     isint(zipcode)
 
-    #propTypeList = ["House", "Condo", "Townhouse"]
+    propTypeList = ["1", "2", "3"]
     # Validate that the input is one of the three valid property types
-    #if propertyType is not None:
-    #    if propertyType not in propTypeList:
-    #        return build_validation_result(
-    #            False,
-    #            "propertyType",
-    #            "The property type must be either House, Condo, or Townhouse in order to use this service, "
-    #            "please provide a different property type.",
-    #        )
+    if propertyType is not None:
+        if propertyType not in propTypeList:
+            return build_validation_result(
+                False,
+                "propertyType",
+                "The property type must be either \"1\" for House, \"2\" for Condo, or \"3\" for Townhouse in order to use this service, "
+                "please provide a different property type.",
+            )
 
-    # Validate the listing price, it should be > 0
-    #if listingPrice is not None:
-    #    listingPrice = parse_int(
-    #        listingPrice
-    #    )  # Since parameters are strings it's important to cast values
-    #    if listingPrice < 0:
-    #        return build_validation_result(
-    #            False,
-    #            "listingPrice",
-    #            "The listing price should be greater than 0$,"
-    #            "please provide a valid listing amount in dollars." 
-    #            "If the real listing price is 0$," 
-    #            "you should make an offer because it sounds like a great deal!",
-    #        )
+    #Validate the listing price, it should be > 0
+    if listingPrice is not None:
+        listingPrice = parse_int(
+            listingPrice
+        )  # Since parameters are strings it's important to cast values
+        if listingPrice < 0:
+            return build_validation_result(
+                False,
+                "listingPrice",
+                "The listing price should be greater than 0$,"
+                "please provide a valid listing amount in dollars." 
+                "If the real listing price is 0$," 
+                "you should make an offer because it sounds like a great deal!",
+            )
     
     aggressionOptions = ["low", "average", "high"]
     # Validate that the user input a valid level of aggression
@@ -150,39 +163,10 @@ def validate_data(bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, z
 
     return build_validation_result(True, None, None, None, None, None, None, None, None)
 
-def readCSV():
-    data = pd.read_csv('data.csv')
-    return data
 
-def cleanData(data):
-    data['bedrooms'] = data['bedrooms'].round().astype(int)
-    data['bathrooms'] = data['bathrooms'].round().astype(int)
-    data['price'] = data['price'].round(decimals=2)
-    data['statezip'] = data['statezip'].replace("WA 9", "9",regex=True).astype(int)
-    missing = data.loc[(data['price'] == 0)].append(data.loc[(data['bathrooms'] == 0)])
-    missing_index_list = missing.reset_index()['index'].to_list()
-    missing_index_list.sort(reverse = True)
-    data = data.drop(missing_index_list,axis=0)
-    return data
-
-def trainModel(data):
-    features = data.drop(["date","street","country", "city", "waterfront", "view", "condition", "yr_renovated", "sqft_above", "floors"],axis=1)
-
-    y = features['price']
-    X = features.drop(['price'],axis=1)
-
-
-    dt = DecisionTreeRegressor(max_depth=18)
-    dt.fit(X, y)
-    
-    return dt
-
-
-def getresponse(userDF, aggressionLevel):
-    data = readCSV()
-    data = cleanData(data)
-    dtpred = trainModel(data)
-    offerEstimate = dtpred.predict(userDF)
+def getresponse(userDF, aggressionLevel, dt):
+    pred = loadS3file()    
+    offerEstimate = pred.predict(userDF)
     if aggressionLevel == "low":
         offerEstimate = offerEstimate*.95
     elif aggressionLevel == "high":
@@ -197,15 +181,13 @@ def offerAid(intent_request):
     Performs dialog management and fulfillment for recommending a portfolio.
     """
 
-    #propertyType = get_slots(intent_request)["propertyType"]
-    #listingPrice = get_slots(intent_request)["listingPrice"]
+    propertyType = get_slots(intent_request)["propertyType"]
+    listingPrice = get_slots(intent_request)["listingPrice"]
     bedrooms = get_slots(intent_request)["bedrooms"]
     bathrooms = get_slots(intent_request)["bathrooms"]
     sqft = get_slots(intent_request)["sqft"]
-    sqftunfinished = get_slots(intent_request)["sqftunfinished"]
     lotsize = get_slots(intent_request)["lotsize"]
     #acresorsqft = get_slots(intent_request)["acresorsqft"]
-    yrbuilt = get_slots(intent_request)["yrbuilt"]
     zipcode = get_slots(intent_request)["zip"]
     aggressionLevel = get_slots(intent_request)["aggressionLevel"]
     source = intent_request["invocationSource"]
@@ -218,7 +200,7 @@ def offerAid(intent_request):
         slots = get_slots(intent_request)
 
         # Validates user's input using the validate_data function
-        validation_result = validate_data(bedrooms, bathrooms, sqft, sqftunfinished, lotsize, yrbuilt, zipcode, aggressionLevel, intent_request)
+        validation_result = validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, propertyType, intent_request)
 
         # If the data provided by the user is not valid,
         # the elicitSlot dialog action is used to re-prompt for the first violation detected.
@@ -240,8 +222,8 @@ def offerAid(intent_request):
         # Once all slots are valid, a delegate dialog is returned to Lex to choose the next course of action.
         return delegate(output_session_attributes, get_slots(intent_request))
 
-    userData = [{'bedrooms': 3, 'bathrooms': 1, 'sqft_living': 1200, 'sqft_lot': 4000, 'sqft_basement': 300, 'yr_built': 1980, 'statezip': 98056}]
-    userDF = pd.DataFrame(userData)
+    #userData = [{'bedrooms': 3, 'bathrooms': 1, 'sqft_living': 1200, 'sqft_lot': 4000, 'sqft_basement': 300, 'yr_built': 1980, 'statezip': 98056}]
+    #userDF = pd.DataFrame(userData)
 
     # Return a message with conversion's result.
     return close(
