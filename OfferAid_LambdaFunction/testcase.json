@@ -12,7 +12,7 @@
     "currentIntent": {
       "name": "buyerInputs",
       "slots": {
-          "zip": "98056",
+          "zipcode": "98056",
           "bathrooms": "1", 
           "bedrooms": "3", 
           "lotsize": "6000", 

@@ -1,10 +1,16 @@
 ### Required Libraries ###
 import pickle
 import boto3
-
+import pandas
+from boto3.session import Session
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 ### Functionality Helper Functions ###
 def parse_int(n):
@@ -17,16 +23,10 @@ def parse_int(n):
         return float("nan")
 
 def loadS3file():
-    cred = boto3.Session().get_credentials()
-    ACCESS_KEY = cred.access_key
-    SECRET_KEY = cred.secret_key
-
-    s3client = boto3.client('s3', 
-                        aws_access_key_id = ACCESS_KEY, 
-                        aws_secret_access_key = SECRET_KEY, 
-                       )
-
-    response = s3client.get_object(Bucket='offeraiddataset', Key='OfferAidmodel.pkl')
+    s3 = boto3.client("s3")
+    response = s3.download_file(
+    Bucket="offeraiddataset", Key="OfferAidmodel.pkl", Filename="downloaded.pkl"
+)
 
     body = response['Body'].read()
     pred = pickle.loads(body)
@@ -187,7 +187,7 @@ def offerAid(intent_request):
     sqft = get_slots(intent_request)["sqft"]
     lotsize = get_slots(intent_request)["lotsize"]
     #acresorsqft = get_slots(intent_request)["acresorsqft"]
-    zipcode = get_slots(intent_request)["zip"]
+    zipcode = get_slots(intent_request)["zipcode"]
     aggressionLevel = get_slots(intent_request)["aggressionLevel"]
     source = intent_request["invocationSource"]
     
@@ -222,7 +222,7 @@ def offerAid(intent_request):
         return delegate(output_session_attributes, get_slots(intent_request))
 
     userData = [{'Zip Code': zipcode, 'Bathrooms': bathrooms, 'Bedrooms': bedrooms, 'Lot Square Footage ': lotsize, 'Listing Price': listingPrice, 'Square Footage': sqft, 'Property Type': propertyType}]
-    userDF = pd.DataFrame(userData)
+    userDF = pandas.DataFrame(userData)
     userDF = userDF.astype(int)
 
     # Return a message with conversion's result.
@@ -257,5 +257,5 @@ def lambda_handler(event, context):
     Route the incoming request based on intent.
     The JSON body of the request is provided in the event slot.
     """
-
+    logger.debug('event.bot.name={}'.format(event['bot']['name']))
     return dispatch(event)
