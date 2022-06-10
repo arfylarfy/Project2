@@ -19,7 +19,7 @@
           "listingPrice": "160000", 
           "sqft": "900", 
           "propertyType": "1",
-          "aggressionLevel": "average"
+          "aggressionLevel": "3"
       },
       "confirmationStatus": "None"
     }

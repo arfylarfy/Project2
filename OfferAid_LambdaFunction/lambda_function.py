@@ -1,11 +1,13 @@
 ### Required Libraries ###
 import pickle
 import boto3
-import pandas
+import pandas as pd
 from boto3.session import Session
+from sklearn.tree import DecisionTreeRegressor
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
 
 import logging
 
@@ -23,13 +25,21 @@ def parse_int(n):
         return float("nan")
 
 def loadS3file():
-    s3 = boto3.client("s3")
-    response = s3.download_file(
-    Bucket="offeraiddataset", Key="OfferAidmodel.pkl", Filename="downloaded.pkl"
-)
+    #cred = boto3.Session().get_credentials()
+    #ACCESS_KEY = cred.access_key
+    #SECRET_KEY = cred.secret_key
+
+    s3client = boto3.client('s3', 
+                        aws_access_key_id = "AKIAZXCMEAEQYU34SZOL", 
+                        aws_secret_access_key = "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" 
+                       )
+
+    response = s3client.get_object(Bucket='offeraiddataset', Key='OfferAidmodel.pkl')
 
     body = response['Body'].read()
     pred = pickle.loads(body)
+
+    
     return pred
 
 
@@ -122,6 +132,7 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
     isint(sqft)
     isint(lotsize)
     isint(zipcode)
+    isint(aggressionLevel)
 
     propTypeList = ["1", "2", "3"]
     # Validate that the input is one of the three valid property types
@@ -149,16 +160,16 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
                 "you should make an offer because it sounds like a great deal!",
             )
     
-    aggressionOptions = ["low", "average", "high"]
+    #aggressionOptions = ["low", "average", "high"]
     # Validate that the user input a valid level of aggression
-    if aggressionLevel is not None:
-        if aggressionLevel not in aggressionOptions:
-            return build_validation_result(
-                False,
-                "aggressionLevel",
-                "Please choose from one of the responses listed in order to get an accurate response,"
-                "the level of aggression can be either \"low\", \"average\" or \"high\"."
-            )
+    #if aggressionLevel is not None:
+        #if aggressionLevel not in aggressionOptions:
+            #return build_validation_result(
+                #False,
+                #"aggressionLevel",
+                #"Please choose from one of the responses listed in order to get an accurate response,"
+                #"the level of aggression can be either \"low\", \"average\" or \"high\"."
+            #)
 
     return build_validation_result(True, None, None)
 
@@ -166,9 +177,9 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
 def getresponse(userDF, aggressionLevel):
     pred = loadS3file()    
     offerEstimate = pred.predict(userDF)
-    if aggressionLevel == "low":
+    if aggressionLevel == "1":
         offerEstimate = offerEstimate*.95
-    elif aggressionLevel == "high":
+    elif aggressionLevel == "3":
         offerEstimate = offerEstimate*1.05
 
     return f"Using the information provided, {offerEstimate} would be a reasonable offer for this property"
@@ -222,7 +233,7 @@ def offerAid(intent_request):
         return delegate(output_session_attributes, get_slots(intent_request))
 
     userData = [{'Zip Code': zipcode, 'Bathrooms': bathrooms, 'Bedrooms': bedrooms, 'Lot Square Footage ': lotsize, 'Listing Price': listingPrice, 'Square Footage': sqft, 'Property Type': propertyType}]
-    userDF = pandas.DataFrame(userData)
+    userDF = pd.DataFrame(userData)
     userDF = userDF.astype(int)
 
     # Return a message with conversion's result.
