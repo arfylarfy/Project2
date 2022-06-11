@@ -1,4 +1,4 @@
-lamda function = lambda function
+lamda_function = lambda function
 
 offerAid.ipynb = load csv data, clean data, train model, save model as a pickle
 
