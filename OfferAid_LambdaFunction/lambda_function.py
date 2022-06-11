@@ -4,7 +4,7 @@ import boto3
 import pandas as pd
 from boto3.session import Session
 from sklearn.tree import DecisionTreeRegressor
-
+""
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-### Functionality Helper Functions ###
+### Functionality Helper Functions ###git a
 def parse_int(n):
     """
     Securely converts a non-integer value to integer.
@@ -29,12 +29,9 @@ def loadS3file():
     #ACCESS_KEY = cred.access_key
     #SECRET_KEY = cred.secret_key
 
-    s3client = boto3.client('s3', 
-                        aws_access_key_id = "", 
-                        aws_secret_access_key = "" 
-                       )
+    s3client = boto3.client("s3")
 
-    response = s3client.get_object(Bucket='offeraiddataset', Key='OfferAidmodel.pkl')
+    response = s3client.get_object(Bucket='offeraidmodel', Key='OfferAidmodel.pkl')
 
     body = response['Body'].read()
     pred = pickle.loads(body)
@@ -177,12 +174,13 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
 def getresponse(userDF, aggressionLevel):
     pred = loadS3file()    
     offerEstimate = pred.predict(userDF)
+    offerEstimate = offerEstimate[0]
     if aggressionLevel == "1":
         offerEstimate = offerEstimate*.95
     elif aggressionLevel == "3":
         offerEstimate = offerEstimate*1.05
 
-    return f"Using the information provided, {offerEstimate} would be a reasonable offer for this property"
+    return f"Using the information provided, ${offerEstimate} would be a reasonable offer for this property"
 
 
 ### Intents Handlers ###
@@ -256,7 +254,7 @@ def dispatch(intent_request):
     intent_name = intent_request["currentIntent"]["name"]
 
     # Dispatch to bot's intent handlers
-    if intent_name == "buyerInputs":
+    if intent_name == "property_info":
         return offerAid(intent_request)
 
     raise Exception("Intent with name " + intent_name + " not supported")
