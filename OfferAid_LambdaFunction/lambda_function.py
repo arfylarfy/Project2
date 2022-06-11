@@ -30,8 +30,8 @@ def loadS3file():
     #SECRET_KEY = cred.secret_key
 
     s3client = boto3.client('s3', 
-                        aws_access_key_id = "AKIAZXCMEAEQYU34SZOL", 
-                        aws_secret_access_key = "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" 
+                        aws_access_key_id = "", 
+                        aws_secret_access_key = "" 
                        )
 
     response = s3client.get_object(Bucket='offeraiddataset', Key='OfferAidmodel.pkl')
