@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-### Functionality Helper Functions ###git a
+### Functionality Helper Functions ###
 def parse_int(n):
     """
     Securely converts a non-integer value to integer.
