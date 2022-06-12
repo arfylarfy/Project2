@@ -2,14 +2,11 @@
 import pickle
 import boto3
 import pandas as pd
+import logging
 from boto3.session import Session
 from sklearn.tree import DecisionTreeRegressor
-""
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
-
-import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -25,10 +22,6 @@ def parse_int(n):
         return float("nan")
 
 def loadS3file():
-    #cred = boto3.Session().get_credentials()
-    #ACCESS_KEY = cred.access_key
-    #SECRET_KEY = cred.secret_key
-
     s3client = boto3.client("s3")
 
     response = s3client.get_object(Bucket='offeraidmodel', Key='OfferAidmodel.pkl')
@@ -147,7 +140,7 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
         listingPrice = parse_int(
             listingPrice
         )  # Since parameters are strings it's important to cast values
-        if listingPrice < 0:
+        if listingPrice <= 0:
             return build_validation_result(
                 False,
                 "listingPrice",
