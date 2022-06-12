@@ -1,6 +1,6 @@
 # Project2
 
-For this project, we will create a lex bot that will help determine a competitieve price offer for homes in Seattle. The lex bot will be supported by a machine learning model that we will choose based off a high level analysis due to time constraints and to focus the majority of our time on the lex bot itself. The machine learning models will consist of key features of site/dwellings as well as the listing price and solve for selling price. Even though the listing price and selling price have a higher correlation, we ant the machine learning model to take in account the selling price so the offer price can be the most competitive. The machine learning model we choose will have the highest coefficient of determination testing score as well as the lowest mean absolute error. 
+For this project, we will create a lex bot that will help determine a competitieve price offer for homes in Seattle. The lex bot will be supported by a machine learning model that we will choose based off a high level analysis due to time constraints and to focus the majority of our time on the functionality of the lambda function and lex bot. The machine learning models will consist of key features of site/dwellings as well as the listing price and solve for selling price. Even though the listing price and selling price have a higher correlation, we ant the machine learning model to take in account the selling price so the offer price can be the most competitive. The machine learning model we choose will have the highest coefficient of determination testing score as well as the lowest mean absolute error. 
 
 ## User Story
 
@@ -8,7 +8,7 @@ As a real estate investor, I want to find a way to make a competitive offer base
 
 ## Acceptance Criteria
 
-Given the analysis of th eSeattle market, we will create a bot that will recommend an offer amount based on the best machine learning model and how aggressive the client wants to make their offer.
+Given the analysis of the Seattle market, we will create a bot that will recommend an offer amount based on the best machine learning model and how aggressive the client wants to make their offer.
 
 ## Method
 
@@ -17,7 +17,8 @@ Given the analysis of th eSeattle market, we will create a bot that will recomme
 - We will then use the analysis to determine the best machine learning model to use in our lex bot
 - The bot will then suggest an offer price that our client would offer for a property based on our model and user input.
 
-
+## Lambda Code, LEX Bot and Required Files for AWS Deployment
+The 'OfferAid_DeplymentFiles' contains all files along with a README with instructions and descriptions of everything required to deploy this prediction model within the AWS environment. 
 
 ## Technologies
 
@@ -29,19 +30,6 @@ The required libraries in order to use the ML_Model_Analysis application are:
 
 INSERT SCREENSHOT
     
-### Lambda Function
-
-The required libraries in order to run the lambda function are:
-
-INSERT SCREENSHOT
-
-### AWS
-
-- Lambda
-- S3
-- Lex Bot
-- Cloud Watch
-
 ## Data and Analysis - Machine Learning
 
 - Create and view the dataframe from the CSV file
@@ -79,11 +67,6 @@ INSERT SCREENSHOTS
 
 - Based on the Mean Absolute Error, we chose to use the Decision Tree Model with our lex bot.
 - Decision trees support non linearity, where Linear Regression supports only linear solutions. When there are large number of features with fewer data-sets (with low noise), linear regressions may outperfomr Decision Trees/Random Forests. In general cases, Decision trees will have better average accuracy.
-
-## Lex Bot
-
-- See ReadMe within the OfferAid_DeploymentFiles
-INSERT LINK
 
 
 ## Contributors
