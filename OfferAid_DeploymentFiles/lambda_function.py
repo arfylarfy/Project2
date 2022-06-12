@@ -150,16 +150,6 @@ def validate_data(bedrooms, bathrooms, sqft, lotsize, zipcode, aggressionLevel, 
                 "you should make an offer because it sounds like a great deal!",
             )
     
-    #aggressionOptions = ["low", "average", "high"]
-    # Validate that the user input a valid level of aggression
-    #if aggressionLevel is not None:
-        #if aggressionLevel not in aggressionOptions:
-            #return build_validation_result(
-                #False,
-                #"aggressionLevel",
-                #"Please choose from one of the responses listed in order to get an accurate response,"
-                #"the level of aggression can be either \"low\", \"average\" or \"high\"."
-            #)
 
     return build_validation_result(True, None, None)
 
