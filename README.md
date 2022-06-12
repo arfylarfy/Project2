@@ -22,7 +22,7 @@ The machine learning model code (ML_Model_Analysis_Original.ipynb) is located in
 
 The csv with the data (Sold_And_Stats_New_a.csv) is located in the "Project_2_Data_and_Analysis" folder.
 
-All screenshots of the project are located in the "Screenshots" subfolder of the "Resources" folder.
+All screenshots and screen recordings of the project are located in the "Screenshots" subfolder of the "Resources" folder.
 
 The project presentation is saved as "Project 2 Fintech Bootcamp.pdf" in the "Resources" folder.
 
