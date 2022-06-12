@@ -27,13 +27,13 @@ This project is written in python.
 
 The required libraries in order to use the ML_Model_Analysis application are:
 
-INSERT SCREENSHOT
+![Data_analysis_imports](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Data_Analysis_imports.png "Data_analysis_imports")
     
 ### Lambda Function
 
 The required libraries in order to run the lambda function are:
 
-INSERT SCREENSHOT
+![Lambda_Function_imports](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Lambda_Function_imports.png "Lambda_Funcion_imports")
 
 ### AWS
 
@@ -46,18 +46,18 @@ INSERT SCREENSHOT
 
 - Create and view the dataframe from the CSV file
 
-INSERT SCREENSHOT
+![Raw_Data_Frame](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Raw_Data_Frame.png "Raw_Data_Frame")
 
 - Clean the data.
     - Keep columns that contain relevant features for the Machine Learning Model (Zip Code, Bathrooms, Bedrooms, Lot Square Footage, Listing Price, Selling Price, Sold to List Price Percentage, Square Footage, and Property Type)
     - Drop NaN values
     - Remove rows that contain "0" Values
     
-INSERT SCREENSHOT
+![Cleaned_Data_Frame](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Cleaned_Data_Frame.png "Cleaned_Data_Frame")
 
 - Compare the features using Heatmap
 
-INSERT SCREENSHOT
+![Features_Heatmap](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Features_Heatmap.png "Features_Heatmap")
 
 - Use 3 different Machine Learning Models and compare the highest coefficient of determination testing score as well as the lowest mean absolute error between each model.
 
@@ -65,15 +65,39 @@ INSERT SCREENSHOT
 
 - Linear Regression Model
 
-INSERT SCREENSHOTS
+    - Code
+    
+    ![Linear_Regression_Model_Code](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Linear_Regression_Model_Code.png "Linear_Regression_Model_Code")
+    
+    
+    - Results
+    
+    ![Linear_Regression_Model_Results](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Linear_Regression_Model_Results.png "Linear_Regression_Model_Results")
+    
 
 - Decision Tree Model
 
-INSERT SCREENSHOTS
+    - Code
+    
+    ![Decision_Tree_Model_Code](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Decision_Tree_Model_Code.png "Decision_Tree_Model_Code")
+    
+    
+    - Results
+    
+    ![Decision_Tree_Model_Results](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Decision_Tree_Model_Results.png "Decision_Tree_Model_Results")
+    
 
 - Random Forest Model
 
-INSERT SCREENSHOTS
+    - Code
+    
+    ![Random_Forest_Model_Code](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Random_Forest_Model_Code.png "Random_Forest_Model_Code")
+    
+    
+    - Results
+    
+    ![Random_Forest_Model_Results](https://github.com/arfylarfy/Project2/blob/main/Resources/Screenshots/Random_Forest_Model_Results.png "Random_Forest_Model_Results")
+  
 
 ### Analysis
 
@@ -83,7 +107,7 @@ INSERT SCREENSHOTS
 ## Lex Bot
 
 - See ReadMe within the OfferAid_DeploymentFiles
-INSERT LINK
+https://github.com/arfylarfy/Project2/blob/main/OfferAid_DeploymentFiles/README.md
 
 
 ## Contributors
