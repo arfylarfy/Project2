@@ -22,7 +22,9 @@ The machine learning model code (ML_Model_Analysis_Original.ipynb) is located in
 
 The csv with the data (Sold_And_Stats_New_a.csv) is located in the "Project_2_Data_and_Analysis" folder.
 
-All screenshots and screen recordings of the project are located in the "Screenshots" subfolder of the "Resources" folder.
+All screenshots and screen recordings of the project are located in the "Screenshots" subfolder of the "Resources" folder. 
+
+(Please note, the screenrecording of the Lex bot "Amazon Lex - Google Chrome 2022-06-10 21-41-36.mp4" is quite large. In order to open in Git Hub, you will need to download it by selecting "View raw".)
 
 The project presentation is saved as "Project 2 Fintech Bootcamp.pdf" in the "Resources" folder.
 
